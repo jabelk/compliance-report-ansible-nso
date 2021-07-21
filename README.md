@@ -81,7 +81,40 @@ curl -k --location --request POST 'https://10.10.20.49:443/restconf/data/tailf-n
 ansible-galaxy collection install ansible.netcommon
 
 
+build ansible using keypath
+developer@ncs# show running-config compliance | display xpath
+/compliance/reports/report[name='check-motd']/compare-template[template-name='MOTD-BANNER'][device-group='IOS-DEVICES']
+developer@ncs# show running-config compliance | display restconf
+/restconf/tailf-ncs:compliance/reports/report=check-motd/compare-template=MOTD-BANNER,IOS-DEVICES
+developer@ncs# show running-config compliance | display keypath
+/compliance/reports/report{check-motd}/compare-template{MOTD-BANNER IOS-DEVICES}
 
+
+output from running compliance report:
+
+{
+    "changed": true,
+    "invocation": {
+        "module_args": {
+            "input": {},
+            "output_invalid": {},
+            "output_required": {},
+            "password": "VALUE_SPECIFIED_IN_NO_LOG_PARAMETER",
+            "path": "/ncs:compliance/reports/report{check-motd}/run",
+            "timeout": 300,
+            "url": "https://10.10.20.49/jsonrpc",
+            "username": "developer",
+            "validate_certs": false,
+            "validate_strict": false
+        }
+    },
+    "output": {
+        "compliance-status": "violations",
+        "id": "3",
+        "info": "Checking 3 devices and no services",
+        "location": "https://localhost:443/compliance-reports/report_3_developer_1_2021-7-21T14:46:50:0.xml"
+    }
+}
 
 # Custom compliance Report
 

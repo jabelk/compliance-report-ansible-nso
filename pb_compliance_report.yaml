@@ -1,19 +1,57 @@
 
 - name: STORE CONFIGS FROM NSO AS YAML
   hosts: "nso_server"
+  vars:
+    nso_username: "admin"
+    nso_password: "admin"
+    nso_url: "http://127.0.0.1/jsonrpc"
   gather_facts: no
   tasks:
-
-    - name: run compliance report
+    - name: SYNC FROM DEVICE TO NSO
       cisco.nso.nso_action:
         url: https://10.10.20.49/jsonrpc
         username: "{{ ansible_user }}"
         password: "{{ ansible_password }}"
-        path: "/ncs:compliance/reports/report=check-motd/run"
-        # input: {'outformat':'xml'}
-      register: COMPLIANCE_REPORT
+        path: /ncs:compliance/reports/report{check-motd}/run
+        input: {}
+      register: report_result
+  
+    - name: SET EXTRACTED PATH TO VAR
+      ansible.builtin.set_fact:
+        report_path: "{{ report_result.get('output').get('location') }}"
+        compliance_status: "{{ report_result.get('output').get('compliance-status') }}"
 
-    - debug: var=COMPLIANCE_REPORT
+    - name: DISPLAY PATH FOR LOG
+      ansible.builtin.debug: 
+        var: report_path
+        verbosity: 2
+
+    - name: DISPLAY REPORT STATUS
+      ansible.builtin.debug: 
+        var: compliance_status
+        verbosity: 2
+  
+  #       - name: Load Native Config
+  # cisco.nso.nso_action:
+  #   url: "https://10.10.20.49/jsonrpc"
+  #   username: developer
+  #   password: C1sco12345
+  #   path: /ncs:devices/ncs:device{dist-rtr01}/load-native-config
+  #   input: { file: "/home/developer/test.cfg" , verbose: true, mode: "merge"}
+  # register: result
+
+
+    # - name: run compliance report
+    #   nso_action:
+    #     url: "{{ nso_url }}"
+    #     username: '{{ nso_username }}'
+    #     password: '{{ nso_password }}'
+    #     # path: /ncs:compliance/reports/report=check-motd/run
+    #     path: /ncs:devices/device{core-rtr01}/sync-from
+    #     # input: {'outformat':'xml'}
+    #   register: COMPLIANCE_REPORT
+
+    # - debug: var=COMPLIANCE_REPORT
 
     # - name: REPORT
     #   register: COMPLIANCE_REPORT
@@ -25,18 +63,18 @@
     #         <input><outformat>html</outformat></input>
       
 
-  # - name: SYNC FROM DEVICE TO NSO
-  #   cisco.nso.nso_action:
-  #     url: https://10.10.20.49/jsonrpc
-  #     username: "{{ ansible_user }}"
-  #     password: "{{ ansible_password }}"
-  #     path: /ncs:devices/device{"{{ item }}"}/sync-from
-  #     input: {}
-  #   with_items:
-  #     - core-rtr01
-  #     - core-rtr02
-  #     - dist-rtr01
-  #     - dist-rtr02
+    # - name: SYNC FROM DEVICE TO NSO
+    #   cisco.nso.nso_action:
+    #     url: https://10.10.20.49/jsonrpc
+    #     username: "{{ ansible_user }}"
+    #     password: "{{ ansible_password }}"
+    #     path: /ncs:devices/device{"{{ item }}"}/sync-from
+    #     input: {}
+    #   with_items:
+    #     - core-rtr01
+    #     - core-rtr02
+    #     - dist-rtr01
+    #     - dist-rtr02
 
 
 
