@@ -78,3 +78,12 @@ curl -k --location --request POST 'https://10.10.20.49:443/restconf/data/tailf-n
 --header 'Authorization: Basic ZGV2ZWxvcGVyOkMxc2NvMTIzNDU=' \
 --data '<input><outformat>html</outformat></input>'
 
+ansible-galaxy collection install ansible.netcommon
+
+
+
+
+# Custom compliance Report
+
+ncs-make-package --service-skeleton python-and-template --action-example custom-compliance-report
+
