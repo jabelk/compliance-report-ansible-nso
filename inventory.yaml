@@ -4,5 +4,5 @@ all:
     nso_server:
       hosts:
         latest:
-          ansible_host: "10.10.20.49" 
+          ansible_host: "10.10.20.50" 
 ...

@@ -1,36 +1,61 @@
 
 - name: STORE CONFIGS FROM NSO AS YAML
-  hosts: "nso_server"
+  hosts: localhost
+  connection: local
   vars:
-    nso_username: "admin"
-    nso_password: "admin"
-    nso_url: "http://127.0.0.1/jsonrpc"
+    # ansible_user: "admin"
+    # ansible_password: "admin"
+    nso_url: "http://localhost:8080/jsonrpc"
+    ansible_connection: "httpapi"
+    ansible_network_os: "restconf"
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+    ansible_httpapi_port: 8080
+    ansible_httpapi_restconf_root: "/restconf/data/"  # default
+    ansible_user: "admin"
+    ansible_password: "admin"
   gather_facts: no
   tasks:
-    - name: SYNC FROM DEVICE TO NSO
+    - name: sync from test
       cisco.nso.nso_action:
-        url: https://10.10.20.49/jsonrpc
+        url: "{{ nso_url }}"
         username: "{{ ansible_user }}"
         password: "{{ ansible_password }}"
-        path: /ncs:compliance/reports/report{check-motd}/run
-        input: {}
-      register: report_result
-  
-    - name: SET EXTRACTED PATH TO VAR
-      ansible.builtin.set_fact:
-        report_path: "{{ report_result.get('output').get('location') }}"
-        compliance_status: "{{ report_result.get('output').get('compliance-status') }}"
+        path: /ncs:devices/device{core-rtr01}/sync-from
+        # input: {'outformat':'xml'}
+      register: COMPLIANCE_REPORT
 
-    - name: DISPLAY PATH FOR LOG
-      ansible.builtin.debug: 
-        var: report_path
-        verbosity: 2
 
-    - name: DISPLAY REPORT STATUS
-      ansible.builtin.debug: 
-        var: compliance_status
-        verbosity: 2
+#     - name: SYNC FROM DEVICE TO NSO
+#       cisco.nso.nso_action:
+#         url: "{{ nso_url }}"
+#         username: "{{ nso_username }}"
+#         password: "{{ nso_password }}"
+#         path: /ncs:compliance/reports/report{check-motd}/run
+#         input: {}
+#       register: report_result
   
+#     - name: SET EXTRACTED PATH TO VAR
+#       ansible.builtin.set_fact:
+#         compliance_status: "{{ report_result.get('output').get('compliance-status') }}"
+#         report_path: "{{ report_result.get('output').get('location') | regex_replace('https://localhost:443', '~/nso-instance/state') }}"
+# # ~/nso-instance/state/compliance-reports/report_14_developer_1_2021-7-22T10:57:9:0.xml
+# # ~/nso-instance/state/compliance-reports/
+# # https://localhost:443/compliance-reports/report_14_developer_1_2021-7-22T10:57:9:0.xml
+#     - name: DISPLAY PATH FOR LOG
+#       ansible.builtin.debug: 
+#         var: report_path
+#         verbosity: 2
+
+#     - name: DISPLAY REPORT STATUS
+#       ansible.builtin.debug: 
+#         var: compliance_status
+#         verbosity: 2
+  
+#     - name: SET EXTRACTED PATH TO VAR
+#       ansible.builtin.set_fact:
+#         report_contents: " {{ lookup( 'file', report_path ) }}"
+
   #       - name: Load Native Config
   # cisco.nso.nso_action:
   #   url: "https://10.10.20.49/jsonrpc"
@@ -41,15 +66,7 @@
   # register: result
 
 
-    # - name: run compliance report
-    #   nso_action:
-    #     url: "{{ nso_url }}"
-    #     username: '{{ nso_username }}'
-    #     password: '{{ nso_password }}'
-    #     # path: /ncs:compliance/reports/report=check-motd/run
-    #     path: /ncs:devices/device{core-rtr01}/sync-from
-    #     # input: {'outformat':'xml'}
-    #   register: COMPLIANCE_REPORT
+
 
     # - debug: var=COMPLIANCE_REPORT
 
