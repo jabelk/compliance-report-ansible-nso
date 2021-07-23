@@ -3,59 +3,62 @@
   hosts: localhost
   connection: local
   vars:
-    # ansible_user: "admin"
-    # ansible_password: "admin"
     nso_url: "http://localhost:8080/jsonrpc"
-    ansible_connection: "httpapi"
-    ansible_network_os: "restconf"
-    ansible_httpapi_use_ssl: true
-    ansible_httpapi_validate_certs: false
+    nso_regex_replace_path: "http://localhost:8080"
     ansible_httpapi_port: 8080
-    ansible_httpapi_restconf_root: "/restconf/data/"  # default
     ansible_user: "admin"
     ansible_password: "admin"
   gather_facts: no
   tasks:
-    - name: sync from test
+    # - name: sync from test
+    #   cisco.nso.nso_action:
+    #     url: "{{ nso_url }}"
+    #     username: "{{ ansible_user }}"
+    #     password: "{{ ansible_password }}"
+    #     path: /ncs:devices/device{core-rtr01}/sync-from
+    #     # input: {'outformat':'xml'}
+    #   register: COMPLIANCE_REPORT
+
+
+    - name: CREATE COMPLIANCE REPORT
       cisco.nso.nso_action:
         url: "{{ nso_url }}"
         username: "{{ ansible_user }}"
         password: "{{ ansible_password }}"
-        path: /ncs:devices/device{core-rtr01}/sync-from
-        # input: {'outformat':'xml'}
-      register: COMPLIANCE_REPORT
-
-
-#     - name: SYNC FROM DEVICE TO NSO
-#       cisco.nso.nso_action:
-#         url: "{{ nso_url }}"
-#         username: "{{ nso_username }}"
-#         password: "{{ nso_password }}"
-#         path: /ncs:compliance/reports/report{check-motd}/run
-#         input: {}
-#       register: report_result
+        path: /ncs:compliance/reports/report{check-motd}/run
+        input: {}
+      register: report_result
   
-#     - name: SET EXTRACTED PATH TO VAR
-#       ansible.builtin.set_fact:
-#         compliance_status: "{{ report_result.get('output').get('compliance-status') }}"
-#         report_path: "{{ report_result.get('output').get('location') | regex_replace('https://localhost:443', '~/nso-instance/state') }}"
-# # ~/nso-instance/state/compliance-reports/report_14_developer_1_2021-7-22T10:57:9:0.xml
-# # ~/nso-instance/state/compliance-reports/
-# # https://localhost:443/compliance-reports/report_14_developer_1_2021-7-22T10:57:9:0.xml
-#     - name: DISPLAY PATH FOR LOG
-#       ansible.builtin.debug: 
-#         var: report_path
-#         verbosity: 2
+    - name: SET EXTRACTED PATH TO VAR
+      ansible.builtin.set_fact:
+        compliance_status: "{{ report_result.get('output').get('compliance-status') }}"
+        report_path: "{{ report_result.get('output').get('location') | regex_replace(nso_regex_replace_path, '~/nso-instance/state') }}"
 
-#     - name: DISPLAY REPORT STATUS
-#       ansible.builtin.debug: 
-#         var: compliance_status
-#         verbosity: 2
+    # - name: DISPLAY PATH FOR LOG
+    #   ansible.builtin.debug: 
+    #     var: report_path
+    #     verbosity: 2
+
+    # - name: DISPLAY REPORT STATUS
+    #   ansible.builtin.debug: 
+    #     var: compliance_status
+    #     verbosity: 2
   
-#     - name: SET EXTRACTED PATH TO VAR
-#       ansible.builtin.set_fact:
-#         report_contents: " {{ lookup( 'file', report_path ) }}"
+    # - name: SET EXTRACTED PATH TO VAR
+    #   ansible.builtin.set_fact:
+    #     report_contents: " {{ lookup( 'fileglob', '~/nso-instance/state/compliance-reports/report_*', wantlist=True ) }}"
 
+    # - name: OPEN FILE
+    #   ansible.builtin.set_fact:
+    #     report_contents: "{{ lookup( 'file', !unsafe report_contents[0]) }}"
+
+    - name: CREATE MASTER XML REPORT
+      assemble:
+        src: "~/nso-instance/state/compliance-reports/"
+        dest: "./reports/master-report.xml"
+      run_once: yes
+
+# '~/nso-instance/state/compliance-reports/report_7_admin_1_2021-7-22T16\:4\:13\:0.xml'
   #       - name: Load Native Config
   # cisco.nso.nso_action:
   #   url: "https://10.10.20.49/jsonrpc"

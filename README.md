@@ -116,6 +116,101 @@ output from running compliance report:
     }
 }
 
+Ansible  unable to use file module to open NSO's compliance report because it has unsafe characters in the filename breaking the path for ansible
+```
+changed: [localhost] => {
+    "changed": true,
+    "invocation": {
+        "module_args": {
+            "input": {},
+            "output_invalid": {},
+            "output_required": {},
+            "password": "VALUE_SPECIFIED_IN_NO_LOG_PARAMETER",
+            "path": "/ncs:compliance/reports/report{check-motd}/run",
+            "timeout": 300,
+            "url": "http://localhost:8080/jsonrpc",
+            "username": "VALUE_SPECIFIED_IN_NO_LOG_PARAMETER",
+            "validate_certs": false,
+            "validate_strict": false
+        }
+    },
+    "output": {
+        "compliance-status": "violations",
+        "id": "9",
+        "info": "Checking 3 devices and no services",
+        "location": "http://localhost:8080/compliance-reports/report_9_********_1_2021-7-22T16:11:38:0.xml"
+    }
+}
+
+TASK [SET EXTRACTED PATH TO VAR] ****************************************************************************************
+task path: /home/developer/compliance-report-ansible-nso/pb_compliance_report.yaml:32
+ok: [localhost] => {
+    "ansible_facts": {
+        "compliance_status": "violations",
+        "report_path": "~/nso-instance/state/compliance-reports/report_9_********_1_2021-7-22T16:11:38:0.xml"
+    },
+    "changed": false
+}
+
+TASK [DISPLAY PATH FOR LOG] *********************************************************************************************
+task path: /home/developer/compliance-report-ansible-nso/pb_compliance_report.yaml:37
+ok: [localhost] => {
+    "changed": false,
+    "report_path": "~/nso-instance/state/compliance-reports/report_9_********_1_2021-7-22T16:11:38:0.xml"
+}
+
+TASK [DISPLAY REPORT STATUS] ********************************************************************************************
+task path: /home/developer/compliance-report-ansible-nso/pb_compliance_report.yaml:42
+ok: [localhost] => {
+    "changed": false,
+    "compliance_status": "violations"
+}
+
+TASK [SET EXTRACTED PATH TO VAR] ****************************************************************************************
+task path: /home/developer/compliance-report-ansible-nso/pb_compliance_report.yaml:47
+[WARNING]: Unable to find '~/nso-instance/state/compliance-reports/report_9_********_1_2021-7-22T16:11:38:0.xml' in
+expected paths (use -vvvvv to see paths)
+
+File lookup using None as file
+fatal: [localhost]: FAILED! => {
+    "msg": "An unhandled exception occurred while running the lookup plugin 'file'. Error was a <class 'ansible.errors.AnsibleError'>, original message: could not locate file in lookup: ~/nso-instance/state/compliance-reports/report_9_********_1_2021-7-22T16:11:38:0.xml"
+}
+```
+the file exists and is able to be opened, but cannot escape it
+
+```
+(py3venv) [developer@devbox compliance-report-ansible-nso]$ more ~/nso-instance/state/compliance-reports/report_7_admin_1_2021-7-22T16\:4\:13\:0.xml
+<?xml version='1.0'?><article xmlns='http://docbook.org/ns/docbook' version='5.0'><articleinfo><modespec><![CDATA[reportc
+ookie : g2gCbQAAAABtAAAACmNoZWNrLW1vdGQ=]]></modespec></articleinfo><info><title></title><pubdate>2021-7-22 16:4:13</pubd
+ate><author><firstname>admin</firstname></author></info><sect1><title>Summary</title><para>Compliance result titled "" de
+fined by report "check-motd"</para><para>Resulting in <command>violations</command></para><para>Checking 3 devices and no
+ services</para><para>Produced 2021-7-22 16:4:13</para><para>From : Oldest available information</para><para>To : 2021-7-
+22 16:4:13</para><sect2><title>Template discrepancies</title><sect3><title>MOTD-BANNER</title><para>Discrepancies in devi
+ce</para><para>dist-rtr01</para><para>dist-rtr02</para><para>internet-rtr01</para></sect3></sect2></sect1><sect1><title>D
+etails</title><sect2><title>Template discrepancies details</title><sect3><title>MOTD-BANNER</title><sect4><title>Device d
+ist-rtr01</title><informalexample><screen><![CDATA[ config {
+     banner {
++        motd "This is a MOTD abnner.";
+     }
+ }
+]]></screen></informalexample></sect4><sect4><title>Device dist-rtr02</title><informalexample><screen><![CDATA[ config {
+     banner {
++        motd "This is a MOTD abnner.";
+     }
+ }
+]]></screen></informalexample></sect4><sect4><title>Device internet-rtr01</title><informalexample><screen><![CDATA[ confi
+g {
+     banner {
++        motd "This is a MOTD abnner.";
+     }
+ }
+]]></screen></informalexample></sect4></sect3></sect2></sect1></article>
+(py3venv) [developer@devbox compliance-report-ansible-nso]$
+```
+
+
+
+
 # Custom compliance Report
 
 ncs-make-package --service-skeleton python-and-template --action-example custom-compliance-report
