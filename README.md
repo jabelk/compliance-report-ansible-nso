@@ -208,6 +208,12 @@ g {
 (py3venv) [developer@devbox compliance-report-ansible-nso]$
 ```
 
+issues:
+- ansible can't read the auto-generated file paths from NSO
+- ansible can't convert from XML to JSON easily
+- using XML Ansible module is super tedious to extract values
+
+
 
 
 

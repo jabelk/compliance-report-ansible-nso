@@ -34,6 +34,22 @@
         compliance_status: "{{ report_result.get('output').get('compliance-status') }}"
         report_path: "{{ report_result.get('output').get('location') | regex_replace(nso_regex_replace_path, '~/nso-instance/state') }}"
 
+    - name: Safely use templated variable to run command. Always use the quote filter to avoid injection issues
+      ansible.builtin.command: 
+        become: yes
+        user: developer
+        argv:
+          - "/usr/bin/cat ~/nso-instance/state/compliance-reports/report_28_admin_1_2021-7-23T12:42:38:0.xml"
+      register: myoutput
+
+
+
+    # # free-form (string) arguments, some arguments on separate lines with the 'args' keyword
+    # # 'args' is a task keyword, passed at the same level as the module
+    # - name: Run command if /path/to/database does not exist (with 'args' keyword)
+    #   ansible.builtin.command: "/usr/bin/cat"
+    #   args: "{{report_path}}"
+
     # - name: DISPLAY PATH FOR LOG
     #   ansible.builtin.debug: 
     #     var: report_path
@@ -52,11 +68,25 @@
     #   ansible.builtin.set_fact:
     #     report_contents: "{{ lookup( 'file', !unsafe report_contents[0]) }}"
 
-    - name: CREATE MASTER XML REPORT
-      assemble:
-        src: "~/nso-instance/state/compliance-reports/"
-        dest: "./reports/master-report.xml"
-      run_once: yes
+    # - name: CREATE MASTER XML REPORT
+    #   assemble:
+    #     src: "~/nso-instance/state/compliance-reports/"
+    #     dest: "./reports/master-report.xml"
+    #   run_once: yes
+
+    # - name: OPEN FILE
+    #   ansible.builtin.set_fact:
+    #     report_contents: "{{ lookup( 'file',  './reports/master-report.xml') }}"
+ 
+    # # How to read an attribute value and access it in Ansible
+    # - name: Read an element's attribute values
+    #   community.general.xml:
+    #     path: "./reports/master-report.xml"
+    #     xpath: /article/info/title
+    #     content: text
+    #   register: xmlresp
+ 
+  # ansible.netcommon.parse_xml
 
 # '~/nso-instance/state/compliance-reports/report_7_admin_1_2021-7-22T16\:4\:13\:0.xml'
   #       - name: Load Native Config
